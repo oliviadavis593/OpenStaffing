@@ -1,0 +1,220 @@
+// OpenStaffing data model.
+// See docs/architecture.md for how these tables are filled and used.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_trgm, postgis]
+}
+
+/// One real hospital. CMS ownership ingest creates rows for every state;
+/// state staffing adapters attach their own IDs through the crosswalk.
+model Hospital {
+  id                 String   @id @default(cuid())
+  slug               String   @unique
+  name               String
+  /// Two-letter state code. Present from day one so more states can plug in.
+  state              String   @db.Char(2)
+  city               String?
+  streetAddress      String?
+  zip                String?
+  /// Illinois Hospital Report Card entity_id (null outside Illinois).
+  reportCardEntityId Int?     @unique
+  /// CMS Certification Number, the federal hospital ID.
+  ccn                String?  @unique
+  latitude           Float?
+  longitude          Float?
+  houseDistrict      Int?
+  senateDistrict     Int?
+  isClosed           Boolean  @default(false)
+  /// True only for local development seed rows. Never shown in production.
+  isSample           Boolean  @default(false)
+  systemId           String?
+  system             HealthSystem? @relation(fields: [systemId], references: [id])
+  measureValues      MeasureValue[]
+  ownerships         Ownership[]
+  ownershipChanges   OwnershipChange[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([state])
+  @@index([systemId])
+}
+
+/// A parent health system, derived from shared owners in CMS data,
+/// with manual overrides where CMS gets it wrong.
+model HealthSystem {
+  id             String     @id @default(cuid())
+  slug           String     @unique
+  name           String
+  manualOverride Boolean    @default(false)
+  hospitals      Hospital[]
+}
+
+/// A measure as published by one source (for example one Report Card measure_id).
+model Measure {
+  id              String         @id @default(cuid())
+  /// Which StaffingSource published it, for example "il-report-card".
+  source          String
+  sourceMeasureId String
+  state           String         @db.Char(2)
+  name            String
+  description     String?
+  /// Shared vocabulary keys from @openstaffing/core, set only when the
+  /// definition truly matches. Null means state-specific and never compared across states.
+  unitType        String?
+  metric          String?
+  defaultUnit     String?
+  /// more_is_better | less_is_better | no_evidence
+  evidence        String?
+  values          MeasureValue[]
+
+  @@unique([source, sourceMeasureId])
+  @@index([metric, unitType])
+}
+
+model MeasureValue {
+  id          String        @id @default(cuid())
+  hospitalId  String
+  measureId   String
+  periodStart DateTime      @db.Date
+  periodEnd   DateTime      @db.Date
+  value       Float
+  unit        String?
+  numerator   Int?
+  denominator Int?
+  hospital    Hospital      @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  measure     Measure       @relation(fields: [measureId], references: [id], onDelete: Cascade)
+  flags       QualityFlag[]
+  ingestedAt  DateTime      @default(now())
+
+  @@unique([hospitalId, measureId, periodStart, periodEnd])
+  @@index([measureId, periodEnd])
+}
+
+enum QualityFlagReason {
+  ZERO_REPORTED
+  LARGE_CHANGE
+  MISSING_UNIT
+  OTHER
+}
+
+/// Suspicious values stay visible with a caveat. Nothing is silently hidden.
+model QualityFlag {
+  id             String            @id @default(cuid())
+  measureValueId String
+  reason         QualityFlagReason
+  detail         String?
+  measureValue   MeasureValue      @relation(fields: [measureValueId], references: [id], onDelete: Cascade)
+  createdAt      DateTime          @default(now())
+
+  @@unique([measureValueId, reason])
+}
+
+/// An owner entity from the CMS Hospital All Owners file.
+model Owner {
+  id               String      @id @default(cuid())
+  /// CMS PECOS Associate ID of the owner.
+  cmsAssociateId   String      @unique
+  name             String
+  ownerType        String?
+  isPrivateEquity  Boolean?
+  isReit           Boolean?
+  isHoldingCompany Boolean?
+  isForProfit      Boolean?
+  isNonProfit      Boolean?
+  ownerships       Ownership[]
+  changes          OwnershipChange[]
+}
+
+/// One owner of one hospital in one monthly CMS snapshot.
+model Ownership {
+  id                  String    @id @default(cuid())
+  hospitalId          String
+  ownerId             String
+  cmsEnrollmentId     String
+  percentageOwnership Float?
+  effectiveDate       DateTime? @db.Date
+  snapshotMonth       DateTime  @db.Date
+  hospital            Hospital  @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  owner               Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@unique([cmsEnrollmentId, ownerId, snapshotMonth])
+  @@index([hospitalId, snapshotMonth])
+}
+
+enum OwnershipChangeType {
+  OWNER_ADDED
+  OWNER_REMOVED
+  PERCENT_CHANGED
+  PE_FLAG_ADDED
+  REIT_FLAG_ADDED
+}
+
+/// Computed by diffing consecutive CMS snapshots.
+model OwnershipChange {
+  id           String              @id @default(cuid())
+  hospitalId   String
+  ownerId      String?
+  type         OwnershipChangeType
+  fromSnapshot DateTime            @db.Date
+  toSnapshot   DateTime            @db.Date
+  details      Json?
+  hospital     Hospital            @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  owner        Owner?              @relation(fields: [ownerId], references: [id])
+  createdAt    DateTime            @default(now())
+
+  @@index([toSnapshot])
+  @@index([hospitalId])
+}
+
+enum CrosswalkStatus {
+  AUTO_ACCEPTED
+  NEEDS_REVIEW
+  APPROVED
+  REJECTED
+}
+
+/// Candidate matches between a state source hospital and a CMS hospital.
+/// Review decisions persist across re-ingest.
+model CrosswalkMatch {
+  id               String          @id @default(cuid())
+  source           String
+  sourceHospitalId String
+  ccn              String
+  score            Float
+  status           CrosswalkStatus
+  note             String?
+  reviewedAt       DateTime?
+  createdAt        DateTime        @default(now())
+
+  @@unique([source, sourceHospitalId, ccn])
+  @@index([status])
+}
+
+enum IngestStatus {
+  RUNNING
+  SUCCEEDED
+  FAILED
+}
+
+/// One run of one ingest job. Powers the data freshness indicator.
+model IngestRun {
+  id         String       @id @default(cuid())
+  source     String
+  status     IngestStatus @default(RUNNING)
+  startedAt  DateTime     @default(now())
+  finishedAt DateTime?
+  inserted   Int          @default(0)
+  updated    Int          @default(0)
+  skipped    Int          @default(0)
+  error      String?
+  metadata   Json?
+
+  @@index([source, startedAt])
+}

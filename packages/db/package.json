@@ -1,0 +1,29 @@
+{
+  "name": "@openstaffing/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate:dev": "prisma migrate dev",
+    "migrate:deploy": "prisma migrate deploy",
+    "seed": "tsx --env-file-if-exists=../../.env src/seed.ts",
+    "studio": "prisma studio",
+    "validate": "prisma validate",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@openstaffing/core": "workspace:*",
+    "@prisma/client": "^6.19.0",
+    "dotenv": "^16.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "prisma": "^6.19.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

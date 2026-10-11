@@ -1,0 +1,50 @@
+name: Scheduled ingest
+
+# Disabled until you set up production:
+#   1. Add repository secrets DATABASE_URL, SITE_URL, and REVALIDATE_SECRET.
+#   2. Add a repository variable INGEST_ENABLED = true.
+# You can always run it by hand from the Actions tab.
+
+on:
+  schedule:
+    - cron: "17 9 * * 1" # Mondays 09:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  ingest:
+    if: vars.INGEST_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm db:generate
+      - run: pnpm --filter @openstaffing/db migrate:deploy
+      - name: Illinois hospitals
+        run: pnpm ingest il:hospitals
+      - name: Illinois staffing values
+        run: pnpm ingest il:values
+      - name: Revalidate the site
+        if: success()
+        run: |
+          curl --fail -X POST "${{ secrets.SITE_URL }}/api/revalidate" \
+            -H "x-revalidate-secret: ${{ secrets.REVALIDATE_SECRET }}"
+      - name: Open an issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --title "Scheduled ingest failed ($(date -u +%Y-%m-%d))" \
+            --body "See the run log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
