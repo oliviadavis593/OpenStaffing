@@ -19,8 +19,8 @@ export default async function HomePage() {
         <h2 id="hospitals-heading">Hospitals</h2>
         {hospitals.length === 0 ? (
           <p className="notice">
-            No data loaded yet. Run <code>pnpm db:seed</code> for sample data, or{" "}
-            <code>pnpm ingest il:hospitals</code> for the real thing. See the README.
+            No data loaded yet. Run <code>npm run db:seed</code> for sample data, or{" "}
+            <code>npm run ingest -- il:hospitals</code> for the real thing. See the README.
           </p>
         ) : (
           <ul>

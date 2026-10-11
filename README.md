@@ -98,17 +98,17 @@ openstaffing/
 
 ## Quickstart (about 5 minutes)
 
-**You need:** Node.js 22+, pnpm 10 (`corepack enable`), and Docker.
+**You need:** Node.js 22+, npm 10+ (included with Node), and Docker.
 
 ```bash
-git clone https://github.com/<your-org>/openstaffing.git
-cd openstaffing
+git clone https://github.com/oliviadavis593/OpenStaffing.git
+cd OpenStaffing
 cp .env.example .env
-pnpm install
-pnpm db:up                     # start local Postgres (PostGIS + pg_trgm)
-pnpm db:migrate --name init    # create tables (first run only)
-pnpm db:seed                   # load 3 fictional sample hospitals
-pnpm dev                       # http://localhost:3000
+npm install
+npm run db:up                       # start local Postgres (PostGIS + pg_trgm)
+npm run db:migrate -- --name init   # create tables (first run only)
+npm run db:seed                     # load 3 fictional sample hospitals
+npm run dev                         # http://localhost:3000
 ```
 
 The seed data is clearly labeled as fictional. To load real data, see
@@ -116,33 +116,33 @@ The seed data is clearly labeled as fictional. To load real data, see
 
 ## Common commands
 
-| Command                       | What it does                                      |
-| ----------------------------- | ------------------------------------------------- |
-| `pnpm dev`                    | Run the site locally                              |
-| `pnpm build`                  | Production build of every package                 |
-| `pnpm typecheck`              | TypeScript checks across the monorepo             |
-| `pnpm test`                   | Unit tests (Vitest)                               |
-| `pnpm lint` / `pnpm format`   | ESLint and Prettier                               |
-| `pnpm db:up` / `pnpm db:down` | Start or stop local Postgres                      |
-| `pnpm db:migrate`             | Create and apply a migration from `schema.prisma` |
-| `pnpm db:studio`              | Browse the database in Prisma Studio              |
-| `pnpm ingest help`            | List data import commands                         |
+| Command                             | What it does                                      |
+| ----------------------------------- | ------------------------------------------------- |
+| `npm run dev`                       | Run the site locally                              |
+| `npm run build`                     | Production build of every package                 |
+| `npm run typecheck`                 | TypeScript checks across the monorepo             |
+| `npm test`                          | Unit tests (Vitest)                               |
+| `npm run lint` / `npm run format`   | ESLint and Prettier                               |
+| `npm run db:up` / `npm run db:down` | Start or stop local Postgres                      |
+| `npm run db:migrate`                | Create and apply a migration from `schema.prisma` |
+| `npm run db:studio`                 | Browse the database in Prisma Studio              |
+| `npm run ingest -- help`            | List data import commands                         |
 
 ## Loading real data
 
 ```bash
 # 1. Find the Report Card's staffing measure IDs (no database needed)
-pnpm ingest il:measures:discover "Nursing Hours"
-pnpm ingest il:measures:discover "Turnover"
+npm run ingest -- il:measures:discover "Nursing Hours"
+npm run ingest -- il:measures:discover "Turnover"
 
 # 2. Map the right IDs in packages/ingest/src/sources/il-report-card/staffing-measures.ts
 
 # 3. Import hospitals, then staffing values
-pnpm ingest il:hospitals
-pnpm ingest il:values
+npm run ingest -- il:hospitals
+npm run ingest -- il:values
 
 # 4. Inspect a downloaded CMS ownership file
-pnpm ingest cms:owners:inspect ./data/raw/hospital_all_owners.csv
+npm run ingest -- cms:owners:inspect ./data/raw/hospital_all_owners.csv
 ```
 
 Every run is recorded in the `IngestRun` table, which powers the site's data freshness indicator.

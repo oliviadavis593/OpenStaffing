@@ -12,8 +12,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@openstaffing/core": "workspace:*",
-    "@openstaffing/db": "workspace:*",
+    "@openstaffing/core": "*",
+    "@openstaffing/db": "*",
     "csv-parse": "^7.0.0",
     "zod": "^3.25.0"
   },
@@ -21,6 +21,6 @@
     "@types/node": "^22.18.0",
     "tsx": "^4.20.0",
     "typescript": "^5.9.0",
-    "vitest": "^3.2.0"
+    "vitest": "^5.0.3"
   }
 }

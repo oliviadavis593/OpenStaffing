@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@openstaffing/core": "workspace:*",
-    "@openstaffing/db": "workspace:*",
+    "@openstaffing/core": "*",
+    "@openstaffing/db": "*",
     "next": "^15.5.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

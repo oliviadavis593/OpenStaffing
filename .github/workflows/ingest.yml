@@ -23,18 +23,17 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm db:generate
-      - run: pnpm --filter @openstaffing/db migrate:deploy
+          cache: npm
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run migrate:deploy -w @openstaffing/db
       - name: Illinois hospitals
-        run: pnpm ingest il:hospitals
+        run: npm run ingest -- il:hospitals
       - name: Illinois staffing values
-        run: pnpm ingest il:values
+        run: npm run ingest -- il:values
       - name: Revalidate the site
         if: success()
         run: |

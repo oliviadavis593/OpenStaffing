@@ -3,7 +3,7 @@ import type { StaffingMetric, UnitType } from "@openstaffing/core";
 /**
  * Report Card measure_id -> shared vocabulary.
  *
- * Empty on purpose: fill it in with `pnpm ingest il:measures:discover "Nursing Hours"`
+ * Empty on purpose: fill it in with `npm run ingest -- il:measures:discover "Nursing Hours"`
  * and the other staffing measure names (Jira: "Catalog the nurse staffing measures").
  * Never guess an ID. A test fails if a mapped ID disappears from the API.
  *

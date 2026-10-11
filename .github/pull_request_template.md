@@ -4,7 +4,7 @@
 
 ## How I checked it
 
-- [ ] `pnpm typecheck && pnpm lint && pnpm test && pnpm build` pass
+- [ ] `npm run typecheck && npm run lint && npm run test && npm run build` pass
 - [ ] Tests added or updated for `packages/core` or `packages/ingest` changes
 - [ ] Screenshots attached for visible changes (desktop and phone width)
 
