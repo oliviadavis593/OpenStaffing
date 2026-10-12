@@ -10,7 +10,7 @@ contribute for a single hack night. It must be cheap to host, fast on phones, an
 
 ## Decision
 
-- TypeScript everywhere, in a pnpm + Turborepo monorepo.
+- TypeScript everywhere, in an npm workspaces + Turborepo monorepo.
 - Next.js (App Router) on Vercel. Hospital pages are static and revalidated after each ingest.
 - Postgres (Neon in production, Docker locally) with Prisma, plus `pg_trgm` for fuzzy matching
   and PostGIS for districts.

@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@openstaffing/core": "workspace:*",
+    "@openstaffing/core": "*",
     "@prisma/client": "^6.19.0",
     "dotenv": "^16.6.0"
   },

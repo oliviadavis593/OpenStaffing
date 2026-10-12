@@ -1,6 +1,6 @@
 /**
  * OpenStaffing ingest CLI. Run from the repo root:
- *   pnpm ingest help
+ *   npm run ingest -- help
  */
 import { readFile } from "node:fs/promises";
 import { slugify } from "@openstaffing/core";
@@ -13,7 +13,7 @@ import { IL_STAFFING_MEASURES } from "./sources/il-report-card/staffing-measures
 
 const HELP = `OpenStaffing ingest
 
-Usage: pnpm ingest <command> [args]
+Usage: npm run ingest -- <command> [args]
 
 Commands:
   il:measures:discover <text>   Search Report Card measures by name (no database needed)
@@ -26,7 +26,7 @@ Commands:
 async function discoverMeasures(text: string) {
   if (!text)
     throw new Error(
-      'Pass search text, for example: pnpm ingest il:measures:discover "Nursing Hours"',
+      'Pass search text, for example: npm run ingest -- il:measures:discover "Nursing Hours"',
     );
   const client = new ReportCardClient();
   let count = 0;

@@ -18,11 +18,11 @@ Follow the [Quickstart in the README](README.md#quickstart-about-5-minutes). In 
 
 ```bash
 cp .env.example .env
-pnpm install
-pnpm db:up
-pnpm db:migrate --name init
-pnpm db:seed
-pnpm dev
+npm install
+npm run db:up
+npm run db:migrate -- --name init
+npm run db:seed
+npm run dev
 ```
 
 ## How the code is organized
@@ -44,7 +44,7 @@ Read [docs/architecture.md](docs/architecture.md) before larger changes, and the
 3. Keep changes focused. Add or update tests for anything in `packages/core` or `packages/ingest`.
 4. Run the checks before you push:
    ```bash
-   pnpm typecheck && pnpm lint && pnpm test && pnpm build
+   npm run typecheck && npm run lint && npm run test && npm run build
    ```
 5. Open a pull request using the template. CI must pass.
 
@@ -62,7 +62,7 @@ Read [docs/architecture.md](docs/architecture.md) before larger changes, and the
 Edit `packages/db/prisma/schema.prisma`, then run:
 
 ```bash
-pnpm db:migrate --name describe_your_change
+npm run db:migrate -- --name describe_your_change
 ```
 
 Commit the generated migration folder with your change.

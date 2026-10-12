@@ -3,10 +3,15 @@
   "private": true,
   "description": "Free, open-source data on how well hospitals staff their nurses, and who owns them.",
   "license": "MIT",
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "npm@10.9.4",
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "npm": ">=10"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "turbo run dev --filter=@openstaffing/web",
     "build": "turbo run build",
@@ -17,11 +22,11 @@
     "format:check": "prettier --check .",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",
-    "db:generate": "pnpm --filter @openstaffing/db generate",
-    "db:migrate": "pnpm --filter @openstaffing/db migrate:dev",
-    "db:seed": "pnpm --filter @openstaffing/db seed",
-    "db:studio": "pnpm --filter @openstaffing/db studio",
-    "ingest": "pnpm --filter @openstaffing/ingest cli"
+    "db:generate": "npm run generate -w @openstaffing/db",
+    "db:migrate": "npm run migrate:dev -w @openstaffing/db --",
+    "db:seed": "npm run seed -w @openstaffing/db",
+    "db:studio": "npm run studio -w @openstaffing/db",
+    "ingest": "npm run cli -w @openstaffing/ingest --"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
@@ -31,14 +36,5 @@
     "turbo": "^2.5.0",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.46.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "esbuild",
-      "prisma",
-      "sharp"
-    ]
   }
 }
