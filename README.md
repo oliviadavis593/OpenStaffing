@@ -98,7 +98,7 @@ openstaffing/
 
 ## Quickstart (about 5 minutes)
 
-**You need:** Node.js 22+, npm 10+ (included with Node), and Docker.
+**You need:** Node.js 22.12+ (or 24+), npm 10+ (included with Node), and Docker.
 
 ```bash
 git clone https://github.com/oliviadavis593/OpenStaffing.git
