@@ -2,14 +2,18 @@
 // See docs/architecture.md for how these tables are filled and used.
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  provider = "prisma-client-js"
 }
 
+// Extensions (pg_trgm for crosswalk matching, PostGIS for districts) are
+// provisioned outside Prisma: by docker/init.sql and the postgis image
+// locally, and by the host in production. Prisma does not track them, because
+// the postgis image also installs postgis_topology, fuzzystrmatch and
+// postgis_tiger_geocoder, which Prisma would report as schema drift on every
+// migrate. No model uses a geometry column, so Prisma never needs them.
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  extensions = [pg_trgm, postgis]
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 /// One real hospital. CMS ownership ingest creates rows for every state;

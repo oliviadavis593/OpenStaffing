@@ -13,7 +13,10 @@ contribute for a single hack night. It must be cheap to host, fast on phones, an
 - TypeScript everywhere, in an npm workspaces + Turborepo monorepo.
 - Next.js (App Router) on Vercel. Hospital pages are static and revalidated after each ingest.
 - Postgres (Neon in production, Docker locally) with Prisma, plus `pg_trgm` for fuzzy matching
-  and PostGIS for districts.
+  and PostGIS for districts. Extensions are provisioned outside Prisma (by `docker/init.sql` and
+  the postgis image locally, by the host in production). Prisma does not track them: the postgis
+  image also installs postgis_topology, fuzzystrmatch and postgis_tiger_geocoder, which Prisma's
+  extension tracking reports as drift on every migrate, and no model uses a geometry column.
 - Ingest runs as plain Node scripts on GitHub Actions schedules, so long jobs avoid serverless
   timeouts and run logs are public.
 - Zod validates every external response; a changed upstream API stops ingest instead of
